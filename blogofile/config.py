@@ -11,6 +11,7 @@ import os
 import post
 import util
 import writer
+import sys
 
 __loaded = False
 
@@ -193,16 +194,22 @@ def __post_load_tasks():
     blog_url = urlparse.urljoin(site_url,blog_path)
         
 def __load_config(path=None):
+    """Load sensible defaults, then load user's configuration."""
+
     #Strategy: Load the default config, and then the user's config.
     #This will make sure that we have good default values if the user's
     #config is missing something.
     exec(default_config)
     if path:
+        # Put user's modules on path.
+        sys.path.insert(0, os.path.dirname(os.path.abspath(path)))
         execfile(path)
+
     #config is now in locals() but needs to be in globals()
     for k,v in locals().items():
         globals()[k] = v
-    #Override any options (from unit tests)
+
+    # Override any options (from unit tests)
     for k,v in override_options.items():
         globals()[k] = v
     __post_load_tasks()
